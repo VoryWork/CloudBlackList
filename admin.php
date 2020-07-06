@@ -95,7 +95,33 @@
     </div>
     
     
-    
+    <hr>
+    <h3>添加/修改</h3>
+    <hr>
+    <div class="row">
+    </div>
+    <form name="adduser" action="" method="get" autocomplete="off" style="">
+        <div class="row">
+        <input type="text" name="action" value="adduser" hidden>
+        <div class="col-md-2 mb-3">
+        <input type="text" class="form-control" placeholder="用户名"  name="username" id="username">
+        </div>
+        <div class="col-md-2 mb-3">
+        <input type="text" class="form-control" placeholder="封禁等级" name="level">
+        </div>
+        <div class="col-md-2 mb-3">
+        <input type="text" class="form-control" placeholder="封禁原因" style="width: 680px;" name="reason" data-toggle="tooltip" data-placement="top" title="">
+        </div>
+        </div>
+        <div class="row" style="margin-top: 15px;">
+        <div class="col-xs-offset-5 col-md-1 mb-3">
+        <input type="submit" class="btn btn-primary mb-2" value="确定">
+        </div>
+        <div class="col-md-1 mb-3">
+        <input class="btn btn-danger mb-2" type="reset" value="取消">
+        </div>
+        </div>
+        </form>
     
     
     <hr>
@@ -138,31 +164,6 @@
         </tbody></table></div></div></div></div>
     </div>
     </div>
-    <hr>
-    <div class="row">
-    </div>
-    <form name="adduser" action="" method="get" autocomplete="off" style="">
-        <div class="row">
-        <input type="text" name="action" value="adduser" hidden>
-        <div class="col-md-2 mb-3">
-        <input type="text" class="form-control" placeholder="用户名"  name="username" id="username">
-        </div>
-        <div class="col-md-2 mb-3">
-        <input type="text" class="form-control" placeholder="封禁等级" name="level">
-        </div>
-        <div class="col-md-2 mb-3">
-        <input type="text" class="form-control" placeholder="封禁原因" style="width: 680px;" name="reason" data-toggle="tooltip" data-placement="top" title="">
-        </div>
-        </div>
-        <div class="row" style="margin-top: 15px;">
-        <div class="col-xs-offset-5 col-md-1 mb-3">
-        <input type="submit" class="btn btn-primary mb-2" value="确定">
-        </div>
-        <div class="col-md-1 mb-3">
-        <input class="btn btn-danger mb-2" type="reset" value="取消">
-        </div>
-        </div>
-        </form>
     
     </div>
     <div class="row">
