@@ -1,0 +1,10 @@
+{
+    "adminuser": "admin",
+    "adminpass": "21232f297a57a5a743894a0e4a801fc3",
+    "user": {
+        "TestUser": {
+            "reason": "\u5f00\u6302",
+            "level": "3"
+        }
+    }
+}
