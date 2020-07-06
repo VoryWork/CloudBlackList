@@ -4,7 +4,14 @@
     "user": {
         "TestUser": {
             "reason": "\u5f00\u6302",
-            "level": "3"
+            "level": "3",
+            "owner":"admin"
+        }
+    },
+    "operator":{
+        "admin":{
+            "password":"21232f297a57a5a743894a0e4a801fc3",
+            "boss":true
         }
     }
 }

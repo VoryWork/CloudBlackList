@@ -1,9 +1,15 @@
 <?php
 	function auth($config) {
 		$username = $_SERVER['PHP_AUTH_USER'];
-		$password = $_SERVER['PHP_AUTH_PW'];
-		if ($config['adminuser'] == $username && $config['adminpass'] == md5($password)) return true;
-		else return false;
+        $password = $_SERVER['PHP_AUTH_PW'];
+        $tmp1 = false;
+        foreach ($config['operator'] as $name => $data) {
+            if ($name == $username && $data['password'] == md5($password )){
+                $tmp1 = true;
+            break;
+            }
+        }
+		return $tmp1;
 	}
 	$config = json_decode(file_get_contents("data.db"),true);
 	$auth = auth($config);
@@ -14,23 +20,32 @@
 		//处理操作
 		switch ($_GET['action']) {
 			case 'deluser' :
-				foreach ($config['user'] as $name => $pass) {
-					if ($name == $_GET['username']) unset($config['user'][$name]);
+				foreach ($config['user'] as $name => $data) {
+					if ($name == $_GET['username'] && $data['owner'] == $_SERVER['PHP_AUTH_USER'] || $config[$_SERVER['PHP_AUTH_USER']]["boss"] == true) unset($config['user'][$name]);
 				}
 				file_put_contents('data.db',json_encode($config));
 				break;
 			case 'adduser' :
-				$username = $_GET['username'];
-				if (strpos($username,"\t") === false && strpos($username,"\n") === false) {
+                $username = $_GET['username'];
+                $isexist=false;
+                foreach ($config['user'] as $name => $data){
+                    if ($config['operator'][$_SERVER['PHP_AUTH_USER']]['boss'] == true) break;
+                    elseif ($name == $username) {
+                        if ($data['owner'] <> $_SERVER['PHP_AUTH_USER']) $isexist = true;
+                        break;
+                    }
+                }
+				if (strpos($username,"\t") === false && strpos($username,"\n") === false && $isexist == false) {
 					$tmp["reason"]=$_GET['reason'];
-					$tmp["level"]=$_GET['level'];
+                    $tmp["level"]=$_GET['level'];
+                    $tmp["owner"]=$_SERVER['PHP_AUTH_USER'];
 					$config['user'][$username] = $tmp;
 					file_put_contents('data.db',json_encode($config));
 				}
 				break;
 			case 'passwd' :
 				if ($_GET['password1'] == $_GET['password2']) {
-					$config['adminpass'] = md5($_GET['password2']);
+					$config['operator'][$_SERVER['PHP_AUTH_USER']]['password'] = md5($_GET['password2']);
 					file_put_contents('data.db',json_encode($config));
 				}
 				else $msg = "密码校验不匹配。";
@@ -137,11 +152,11 @@
                     </div></div><div class="row"><div class="col-sm-12"><table id="datetable_table" class="table table-list dataTable no-footer dtr-inline" style="width: 100%;" role="grid" aria-describedby="datetable_table_info">
     <thead>
     <tr role="row">
-        <th class="text-center sorting_asc" tabindex="0" rowspan="1" colspan="1" style="width: 64px;" aria-sort="ascending" aria-label="状态: activate to sort column descending">状态</th>
-        <th class="text-center sorting" tabindex="0" rowspan="1" colspan="1" style="width: 200px;" aria-label="被转发IP/域名: activate to sort column ascending">用户名</th>
-        <th class="text-center sorting" tabindex="0" rowspan="1" colspan="1" style="width: 100px;" aria-label="端口: activate to sort column ascending">封禁等级</th>
-        <th class="text-center sorting" tabindex="0" rowspan="1" colspan="1" style="width: 300px;" aria-label="转发IP: activate to sort column ascending">封禁原因</th>
-        <th class="text-center sorting" tabindex="0" rowspan="1" colspan="1" style="width: 57px;" aria-label="操作: activate to sort column ascending">操作</th></tr>
+        <th class="text-center sorting_asc" tabindex="0" rowspan="1" colspan="1" style="width: 64px;" aria-sort="" aria-label="">等级</th>
+        <th class="text-center sorting" tabindex="0" rowspan="1" colspan="1" style="width: 200px;" aria-label="">用户名</th>
+        <th class="text-center sorting" tabindex="0" rowspan="1" colspan="1" style="width: 100px;" aria-label="">创建者</th>
+        <th class="text-center sorting" tabindex="0" rowspan="1" colspan="1" style="width: 300px;" aria-label="">封禁原因</th>
+        <th class="text-center sorting" tabindex="0" rowspan="1" colspan="1" style="width: 57px;" aria-label="">操作</th></tr>
     </thead>
     <tbody>
     <?php
@@ -150,15 +165,18 @@
 			foreach ($usertable as $name => $data) {
 				?><tr role="row" class="odd">
                 <td class="text-center sorting_1" tabindex="0">
-                <span class="label status status-active">已生效</span></td>
+                <span class="label status status-active"><?php echo htmlspecialchars($data['level']); ?></span></td>
 					<td class=" text-center"><?php echo htmlspecialchars($name); ?></td>
-                    <td class=" text-center"><?php echo htmlspecialchars($data["level"]); ?></td>
-					<td class=" text-center"><?php echo htmlspecialchars($data["reason"]); ?></td>
+                    <td class=" text-center"><?php echo htmlspecialchars($data["owner"])." "; ?></td>
+					<td class=" text-center"><?php echo htmlspecialchars($data["reason"])." "; ?></td>
 					<td class=" text-center">
+                    <?php if ($_SERVER['PHP_AUTH_USER'] == $data["owner"] or $config["operator"][$_SERVER['PHP_AUTH_USER']]['boss'] == true) { ?>
 						<span><a class="btn btn-danger mb-2" href="?action=deluser&username=<?php echo $name; ?>">删除</a></span>
 					</td>
+                    <?php }
+                    else {echo "无权操作";}?>
 				</tr><?php
-			}
+        }
 		}
 	?>
         </tbody></table></div></div></div></div>
@@ -171,14 +189,14 @@
     <input type="password" style="display: none;"/>
 		<input type="text" name="action" value="passwd" hidden>
     <div id="newPassword1" class="form-group has-feedback">
-        <label for="inputNewPassword1" class="col-sm-5 control-label">修改管理员新密码</label>
+        <label for="inputNewPassword1" class="col-sm-5 control-label">修改密码</label>
         <div class="col-sm-6">
         <input class="form-control" type="password" name="password1" autocomplete="off">
         <span class="form-control-feedback glyphicon"></span>
     </div>
     </div>
     <div id="newPassword2" class="form-group has-feedback">
-    <label for="inputNewPassword2" class="col-sm-5 control-label">确认管理员新密码</label>
+    <label for="inputNewPassword2" class="col-sm-5 control-label">确认密码</label>
     <div class="col-sm-6">
     <input class="form-control" type="password" name="password2" autocomplete="off">
     <div id="inputNewPassword2Msg"> </div>
